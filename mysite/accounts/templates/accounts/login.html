@@ -1,0 +1,32 @@
+{% extends 'mysite/base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-center" style="height:90vh;">
+    <div>
+        <form style="width:400px;" method="post">
+            {% csrf_token %}
+            <div class="d-flex justify-content-start">
+                <p class="fs-1">Log In</p>
+            </div>
+            <div class="form-floating mb-3">
+                {% render_field form.email type="email" class="form-control" id="floatingInput" placeholder="name@example.com" %}
+                <label for="floatingInput">Email address</label>
+            </div>
+            <div class="form-floating mb-3">
+                {% render_field form.password type="password" class="form-control" id="floatingInput" placeholder="Password" %}
+                <label for="floatingPassword">Password</label>
+            </div>
+            <a class="fw-bold text-muted text-decoration-none" href="#" >Forgot Password?</a>
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-lg btn-success">Login</button>
+            </div>
+        </form>
+        <hr/>
+        <div class="d-flex justify-content-center">
+            <p class="fw-bold">Not a User? <a href="{% url 'accounts:signup' %}" class="text-decoration-none">Sign Up</a></p>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

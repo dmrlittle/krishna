@@ -1,0 +1,42 @@
+{% extends 'mysite/base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+{% for message in messages %}
+<div class="alert {{ message.tags }} alert-dismissible" role="alert">
+    {{ message | safe }}
+</div>
+{% endfor %}
+<div class="d-flex align-items-center justify-content-center" style="height:90vh;">
+    <div class="row g-2">
+        {% if user.groups.all.0.name == 'miniadmin' %} 
+        <form class="col-md-5" style="width:400px;" method="post">
+            {% csrf_token %}
+            <div class="d-flex justify-content-start">
+                <p class="fs-1">Create Meet</p>
+            </div>
+            <input type="hidden" name="type" value="create">  
+            <div class="form-floating mb-3">
+                {% render_field form.code class="form-control" id="floatingInput" placeholder="name@example.com" %}
+                <label for="floatingInput">{{ form.code.label }}</label>
+            </div>
+        </form>
+        <div class="col-md d-flex align-items-center justify-content-center" style="width:100px;">
+            <h1>Or</h1>
+        </div>
+        {% endif %}
+        <form class="col-md-5" style="width:400px;" method="post">
+            {% csrf_token %}
+            <div class="d-flex justify-content-start">
+                <p class="fs-1">Join Meet</p>
+            </div>
+            <input type="hidden" name="type" value="join">
+            <div class="form-floating mb-3">
+                {% render_field form.code class="form-control" id="floatingInput" placeholder="name@example.com" %}
+                <label for="floatingInput">{{ form.code.label }}</label>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock content %}

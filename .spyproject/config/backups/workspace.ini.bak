@@ -1,0 +1,10 @@
+[workspace]
+restore_data_on_startup = True
+save_data_on_exit = True
+save_history = True
+save_non_project_files = False
+
+[main]
+version = 0.2.0
+recent_files = ['../../.config/spyder-py3/temp.py', 'mysite/chat/consumers.py', 'mysite/chat/routing.py', 'mysite/mysite/settings.py', 'mysite/chat/views.py', 'mysite/chat/urls.py', 'mysite/chat/templates/chat/pilot.html', 'mysite/chat/forms.py', 'mysite/chat/models.py', 'mysite/chat/templates/chat/index.html', 'mysite/chat/templates/mysite/signup.html', 'mysite/chat/templates/mysite/base.html', 'mysite/chat/templates/mysite/login.html']
+
