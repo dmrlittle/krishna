@@ -8,7 +8,7 @@ from django.contrib import messages
 def chat(request, room_id):
     user = request.user
     context = {'room_id':room_id, 'username':user.username}
-    return render(request, 'chat/chat1.html', context)
+    return render(request, 'chat/chat.html', context)
 
 @login_required
 def pilot(request):
