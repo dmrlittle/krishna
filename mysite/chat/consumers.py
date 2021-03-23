@@ -29,6 +29,7 @@ class ChatConsumer(WebsocketConsumer):
         message = text_data_json['message']
         username =  self.scope['user'].username
         dt = datetime.datetime.now()
+        usr_id = self.scope['user'].id
         
         save(self.room_name, username, message, dt)
         # Send message to room group
@@ -38,20 +39,25 @@ class ChatConsumer(WebsocketConsumer):
                 'type': 'chat_message',
                 'message': message,
                 'username': username,
-                'dt': f"{dt.strftime('%I')}:{dt.strftime('%M')} {dt.strftime('%p')}"
+                'dt': f"{dt.strftime('%I')}:{dt.strftime('%M')} {dt.strftime('%p')}",
+                #'admin': '#ffff80' if self.scope['user'].groups.filter(name='miniadmin').exists() else ''
+                'usr_id':usr_id
             }
         )
 
     # Receive message from room group
     def chat_message(self, event):
-        print('hihi')
         message = event['message']
         username = event['username']
         dt = event['dt']
+        #admin = event['admin']
+        usr_id = event['usr_id']
 
         # Send message to WebSocket
         self.send(text_data=json.dumps({
             'message': message,
             'username':username,
-            'dt':dt
+            'dt':dt,
+            #'admin':admin
+            'sender': ['justify-content-end','msg1'] if self.scope['user'].id == usr_id else []
         }))

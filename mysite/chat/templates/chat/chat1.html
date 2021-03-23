@@ -5,13 +5,18 @@
 <!--<link rel="stylesheet" href="{% static 'chat/css/emojis.css' %}">-->
 <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
 <link href="{% static 'chat/lib/css/emoji.css' %}" rel="stylesheet">
+<link rel="prefetch" href="{% static 'chat/emoji/full-emoji-list.json' %}">
+<link rel="preload" href="{% static 'chat/emoji/full-emoji-list.json' %}">
 <style>
 .msg {
-    background-color: #f5f5f5;  
+    background-color: #017bfd;
     padding: 8px;
     border-radius: 15px;
     margin-top: 10px;
     margin-right: 10px;
+}
+.msg1 {
+    background-color: #f5f5f5;   
 }
 .no-border {
     border: 0;
@@ -27,20 +32,20 @@
 {% endblock head %}
 
 {% block content %}
-<div class="d-flex align-items-center justify-content-center" style="height:76vh;">
-    <div style="height:75vh;width:98vw;">
+<div class="d-flex align-items-center justify-content-center" style="height:90vh;">
+    <div class="m-2" style="width:95vw;padding-top:40px;">
         <div class="row g-1">
             <div class="col-9">
-               <div class="p-3 bg-dark text-white">Visual</div>
+               <div class="p-3 bg-dark text-white">Live Stream</div>
             </div>
             <div class="col-3">
                 <div class="justify-content-between">
-                    <div class="p-3 bg-dark text-white">Chat</div>
-                    <div class="rounded-3 border border-dark border-1 mb-1 mt-1" style="height:80vh;overflow-y: auto;background-color: #fff;">
+                    <div class="p-3 bg-dark text-white">Live Chat</div>
+                    <div class="rounded-3 border border-dark border-1 mb-1 mt-1" style="height:75vh;overflow-y: auto;background-color: #fff;">
                         <div id="messages"></div>
                     </div>
                     <div class="input-group mb-3 border border-dark border-1" style="background-color: #fff;padding-left:5px">
-                        <!--<img id="emoji-ico" data-toggle="popover" src="{% static 'chat/svg/smile.svg' %}" style="margin:5px;" width="40px" height="40px" onclick='$("#emojis").show()'>-->
+                        <img id="emoji-ico" data-toggle="popover" src="{% static 'chat/svg/happy.svg' %}" style="margin:10px;" width="35px" height="35px" onclick='$("#emojs").show()'>
                         <input id="chat-message-input" type="text" data-emojiabl="true" class="form-control no-border" aria-label="Recipient's username" aria-describedby="button-addon2">
                         <button id="chat-message-submit" style="background-color: #fff;border-bottom-right-radius:5px;margin-left:-10px" type="submit" class="btn btn-lg"><img src="{% static 'chat/svg/send.svg' %}" width="30px" height="30px"></button>
                     </div>
@@ -72,12 +77,12 @@
         chatSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
             $("#messages").append(
-            '<div class="d-flex align-items-center">\
+            '<div class="d-flex align-items-center '+data.sender[0]+'">\
             <div class="text-left pr-1"> \
             <img src="https://img.icons8.com/color/40/000000/guest-female.png" width="40" class="img1" >\
             </div>\
             	<div><div class="d-flex align-items-center">\
-                <div class="msg" {% if user.groups.all.0.name == 'miniadmin' %} style="background-color: #ffff80;" {% endif %}><span style="font-weight: 700">'+data.username+'</span> <span style="font-size:11px;">'+data.dt+'</span>\
+                <div class="msg '+data.sender[1]+'"><span style="font-weight: 700;">'+data.username+'</span> <span style="font-size:11px;">'+data.dt+'</span>\
                     <div>'+data.message+'</div> \
                 </div> \
     		</div>');
@@ -104,57 +109,12 @@
             messageInputDom.value = '';
         };
 </script>
+<script src="https://cdn.jsdelivr.net/npm/emoji-button@0.6.0/dist/index.min.js"></script>
 <script>
-$(document).ready(function(){
-    $('[data-toggle="poover"]').popover({ 
-        html : true,
-        sanitize: false,
-        
-        content: function() {
-            return $('#emojis').html();
-        },
-        placement : 'top',
-    });
-    
-});
-$(document).ready(function(){
-    $('[data-toggle="popover"]').click({
-        if($("#emojis").is(":hidden")){ 
-        $("#emojis").show();
-        }
-        if($("#emojis").is(":visible")){
-        $("#emojis").hide();
-        }
-    });
-    
+      window.addEventListener('DOMContentLoaded', () => {
+  EmojiButton(document.querySelector('#emoji-ico'), function (emoji) {
+    document.querySelector('#chat-message-input').value += emoji;
+  });
 });
 </script>
-<script>
-    $("#emojis").disMojiPicker()
-    $("#emojis").hide();
-    $("#emojis").picker(emoji => console.log(emoji));
-    twemoji.parse(document.body);
-</script>
-<script>
-</script>
-  
-  <script src="{% static 'chat/lib/js/config.js' %}"></script>
-  <script src="{% static 'chat/lib/js/util.js' %}"></script>
-  <script src="{% static 'chat/lib/js/jquery.emojiarea.js' %}"></script>
-  <script src="{% static 'chat/lib/js/emoji-picker.js' %}"></script>
-  <script>
-      $(function() {
-        // Initializes and creates emoji set from sprite sheet
-        var url = "{% static 'chat/lib/img/' %}";
-        window.emojiPicker = new EmojiPicker({
-          emojiable_selector: '[data-emojiable=true]',
-          assetsPath: url,
-          popupButtonClasses: 'fa fa-smile-o'
-        });
-        // Finds all elements with `emojiable_selector` and converts them to rich emoji input fields
-        // You may want to delay this step if you have dynamically created input fields that appear later in the loading process
-        // It can be called as many times as necessary; previously converted input fields will not be converted again
-        window.emojiPicker.discover();
-      });
-  </script>
 {% endblock content %}
