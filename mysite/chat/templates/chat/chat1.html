@@ -103,10 +103,12 @@
         document.querySelector('#chat-message-submit').onclick = function(e) {
             const messageInputDom = document.querySelector('#chat-message-input');
             const message = messageInputDom.value;
+            if( message != '' ) {
             chatSocket.send(JSON.stringify({
                 'message': message
             }));
             messageInputDom.value = '';
+            }
         };
 </script>
 <script src="https://cdn.jsdelivr.net/npm/emoji-button@0.6.0/dist/index.min.js"></script>
