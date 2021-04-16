@@ -1,7 +1,7 @@
 import json, datetime
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
-from chat.custom import save
+from chat.custom import save,load
 
 class ChatConsumer(WebsocketConsumer):
     def connect(self):
@@ -16,6 +16,7 @@ class ChatConsumer(WebsocketConsumer):
 
         self.accept()
 
+
     def disconnect(self, close_code):
         # Leave room group
         async_to_sync(self.channel_layer.group_discard)(
@@ -29,7 +30,6 @@ class ChatConsumer(WebsocketConsumer):
         message = text_data_json['message']
         username =  self.scope['user'].username
         dt = datetime.datetime.now()
-        usr_id = self.scope['user'].id
         
         save(self.room_name, username, message, dt)
         # Send message to room group
@@ -41,7 +41,6 @@ class ChatConsumer(WebsocketConsumer):
                 'username': username,
                 'dt': f"{dt.strftime('%I')}:{dt.strftime('%M')} {dt.strftime('%p')}",
                 #'admin': '#ffff80' if self.scope['user'].groups.filter(name='miniadmin').exists() else ''
-                'usr_id':usr_id
             }
         )
 
@@ -51,7 +50,7 @@ class ChatConsumer(WebsocketConsumer):
         username = event['username']
         dt = event['dt']
         #admin = event['admin']
-        usr_id = event['usr_id']
+
 
         # Send message to WebSocket
         self.send(text_data=json.dumps({
@@ -59,5 +58,5 @@ class ChatConsumer(WebsocketConsumer):
             'username':username,
             'dt':dt,
             #'admin':admin
-            'sender': ['justify-content-end','msg1'] if self.scope['user'].id == usr_id else []
+            'sender': ['justify-content-end','msg1'] if self.scope['user'].username == username else []
         }))
