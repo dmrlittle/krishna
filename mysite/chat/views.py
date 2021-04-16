@@ -66,25 +66,3 @@ def chat(request, room_id=None):
 
     return render(request, 'chat/chat.html', context)
 
-@login_required
-def pilot(request):
-    if request.method == 'POST':
-        form = MeetForm(request.POST)
-        if form.is_valid():
-            room_id = form.cleaned_data['code']
-            if request.POST['type'] == 'create' and request.user.groups.filter(name='miniadmin').exists():
-                meet = Meet(code=room_id)
-                meet.save()
-                return redirect('chat:chat', room_id=room_id)
-            elif request.POST['type'] == 'join':
-                meet = Meet.objects.filter(code=room_id).first()
-                if meet:
-                    return redirect('chat:chat', room_id=room_id)
-                else:
-                    messages.error(request, "Invalid Code: The given meet code is invalid or has expired !")
-                    form = MeetForm()
-    else:
-        form = MeetForm()
-        
-    context={'form':form}
-    return render(request, 'chat/pilot.html', context)
