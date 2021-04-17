@@ -43,9 +43,12 @@ background-color:#2c3e50;
             <div class="col-3">
                <div class="p-3 title text-white d-flex justify-content-between">
                    <span class="d-flex align-items-center fs-3">Groups</span>
+                   <div>
+                   <button class="btn p-0" data-bs-toggle="modal" data-bs-target="#staticBackdrop7"><img src="{% static 'chat/png/invitation.png' %}" width="35px" height="35px" style="margin-right:10px;"></img></button>
                    {% if user.groups.all.0.name == 'miniadmin' %} 
                    <button class="btn p-0" data-bs-toggle="modal" data-bs-target="#staticBackdrop"><img src="{% static 'chat/png/plus.png' %}" width="35px" height="35px"></img></button> 
                    {% endif %}
+                   </div>
                </div>
                <div class="" style="height:80vh;overflow-y: auto;background-color: #fff;">
                         <ul class="list-group mt-1 mb-1">
@@ -77,7 +80,7 @@ background-color:#2c3e50;
                     <div class="input-group mb-3 " style="background-color: #fff;padding-left:5px">
                         <img id="emoji-ico" data-toggle="popover" src="{% static 'chat/svg/happy.svg' %}" style="margin:10px;" width="35px" height="35px" onclick='$("#emojs").show()'>
                         <input id="chat-message-input" type="text" placeholder="enter your message" data-emojiabl="true" class="form-control no-border" aria-label="Recipient's username" aria-describedby="button-addon2">
-                        <button style="margin-left:-10px" type="submit" class="btn btn-lg"><img src="{% static 'chat/png/paper-clip.png' %}" width="30px" height="30px"></button>
+                        <button style="margin-left:-10px" data-bs-toggle="modal" data-bs-target="#staticBackdrop6" class="btn btn-lg"><img src="{% static 'chat/png/paper-clip.png' %}" width="30px" height="30px"></button>
                         <button id="chat-message-submit" style="margin-left:-10px" type="submit" class="btn btn-lg"><img src="{% static 'chat/svg/send.svg' %}" width="30px" height="30px"></button>
                     </div>
                     <div id="emojis" class="chat-popup ovelay"></div>
@@ -125,9 +128,18 @@ background-color:#2c3e50;
                 {{ user.user.username }} ({{ user.user.email }})
               </label>
               {% endfor %}
+              <div class="list-group">
+                {% for user in invited %}
+                    <li class="list-group-item bg-secondary">
+                    {{ user.user.username }} ({{ user.user.email }}) - Invited
+                    </li>
+                {% endfor %}
+              </div>
             </div>
         <button type="submit" class="btn btn-primary m-2">Add</button>
+            
       </form>
+      
     </div>
   </div>
 </div>
@@ -197,6 +209,53 @@ background-color:#2c3e50;
   </div>
 </div>
 
+<!-- Modal -->
+<div class="modal fade" id="staticBackdrop6" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="staticBackdropLabel">File Upload</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form enctype="multipart/form-data" class="modal-body d-flex justify-content-end" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="meet_code" value="{{ room_id }}">
+          <input type="hidden" name="upload_file" value=1>
+          <div class="input-group mb-3 d-flex justify-content-between">
+              {% render_field fileform.file type="file" sclass="form-control" %}
+              <button type="submit" class="btn btn-info">Upload</button>
+          </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="staticBackdrop7" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="staticBackdropLabel">Group Invites</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form class="modal-body" method="post">
+          {% csrf_token %}
+            <input type="hidden" name="invite_res" value=1>
+            <div class="list-group">
+              {% for grp in UP.invited_groups.all %}
+              <label class="list-group-item">
+                <input class="form-check-input me-1" type="checkbox" name="meet_code" value="{{ grp.id }}">
+                {{ grp.code }} 
+              </label>
+              {% endfor %}
+            </div>
+        <button type="submit" class="btn btn-primary m-2" name='submit' value='accept'>Accept</button>
+        <button type="submit" class="btn btn-primary m-2" name='submit' value='remove'>Decline</button>
+      </form>
+    </div>
+  </div>
+</div>
+
 <!-- Scripts -->
 <div id="emojis" class="chat-popup" ></div>
 {{ room_id|json_script:"room-id" }}
@@ -209,16 +268,24 @@ background-color:#2c3e50;
         const datas = JSON.parse(document.getElementById('msglist').textContent);
         for ( var i=0; i<datas.length; i++) {
             var data = datas[i];
+            if(data.datatype == 'msg'){
             $("#messages").append(
             '<div class="d-flex align-items-center '+data.sender[0]+'">\
-            <div class="text-left pr-1"> \
-            <img src="http://emilcarlsson.se/assets/harveyspecter.png" width="40" style="border-radius:50%;margin-right:5px;" class="img1" >\
-            </div>\
             	<div><div class="d-flex align-items-center">\
                 <div class="msg '+data.sender[1]+'"><span style="font-weight: 700;">'+data.username+'</span> <span style="font-size:11px;">'+data.dt+'</span>\
                     <div>'+data.message+'</div> \
                 </div> \
     		</div>');
+    		}
+    		else {
+    		$("#messages").append(
+            '<div class="d-flex align-items-center '+data.sender[0]+'">\
+            	<div><div class="d-flex align-items-center">\
+                <div class="msg '+data.sender[1]+'"><span style="font-weight: 700;">'+data.username+'</span> <span style="font-size:11px;">'+data.dt+'</span>\
+                    <div><a href="http://'+data.message[1]+'">'+data.message[0]+'<\a><\div>\
+                </div> \
+    		</div>');
+    		}
         }
     </script>
 
@@ -239,9 +306,6 @@ background-color:#2c3e50;
             const data = JSON.parse(e.data);
             $("#messages").append(
             '<div class="d-flex align-items-center '+data.sender[0]+'">\
-            <div class="text-left pr-1"> \
-            <img src="http://emilcarlsson.se/assets/harveyspecter.png" width="40" style="border-radius:50%;margin-right:5px;" class="img1" >\
-            </div>\
             	<div><div class="d-flex align-items-center">\
                 <div class="msg '+data.sender[1]+'"><span style="font-weight: 700;">'+data.username+'</span> <span style="font-size:11px;">'+data.dt+'</span>\
                     <div>'+data.message+'</div> \

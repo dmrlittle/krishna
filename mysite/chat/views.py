@@ -1,17 +1,22 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.conf import settings
 from accounts.models import UserProfile
-from chat.models import Meet
-from chat.forms import MeetForm
+from chat.models import Meet, File
+from chat.forms import MeetForm, FileForm
 from django.contrib import messages
-from chat.custom import load
+from chat.custom import load, send
 from django.http import Http404
+import os
 
 @login_required
 def chat(request, room_id=None):
+    if not UserProfile.objects.filter(user=request.user.id).first():
+        raise Http404('Only Users registered via signup allowed!')
     if request.method == 'POST':
         form1 = MeetForm(request.POST)
+        fileform = FileForm(request.POST, request.FILES)
         if form1.is_valid():
             room_id = form1.cleaned_data['code']
             if not Meet.objects.filter(code=room_id).first():
@@ -21,11 +26,20 @@ def chat(request, room_id=None):
                 meet.members.add(user)
                 meet.admin.add(user)
                 return redirect('chat:pilot')
+        elif fileform.is_valid():
+            file = File(file = request.FILES['file'])
+            file.save()
+            send(request.POST.get('meet_code',None), [os.path.basename(file.file.name),request.META['HTTP_HOST']+file.file.url], request.user.username)
+            if request.POST.get('meet_code',None) and request.POST.get('meet_code',None)!='' :
+                return (redirect('chat:chat', room_id=request.POST.get('meet_code',None))) 
+            else:
+                return redirect('chat:pilot')
         else:
             if request.POST.getlist('add_mem',None):
                 meet = Meet.objects.filter(code=request.POST.get('meet_code',None)).first()
                 users = UserProfile.objects.filter(id__in = request.POST.getlist('add_mem',None))
-                [meet.members.add(user) for user in users if meet]
+                [meet.invited.add(user) for user in users if meet]
+                print(request.POST)
                 return redirect('chat:pilot')
             elif request.POST.getlist('remove_mem',None):
                 meet = Meet.objects.filter(code=request.POST.get('meet_code',None)).first()
@@ -41,6 +55,15 @@ def chat(request, room_id=None):
                 meet = Meet.objects.filter(code=request.POST.get('meet_code',None)).first()
                 meet.delete()
                 return redirect('chat:pilot')
+            elif request.POST.getlist('invite_res',None):
+                meets = Meet.objects.filter(id__in=request.POST.getlist('meet_code',None))
+                user = UserProfile.objects.filter(user = request.user).first()
+                if request.POST.get('submit',None) == 'accept' :
+                    [meet.members.add(user) for meet in meets if meet]
+                elif request.POST.get('submit',None) == 'decline' :
+                    pass                
+                [meet.invited.remove(user) for meet in meets if meet]
+                return redirect('chat:pilot')
             
     if room_id != None:
         meet = Meet.objects.filter(code=room_id).first()
@@ -54,15 +77,18 @@ def chat(request, room_id=None):
     meets = Meet.objects.all()
     
     form = MeetForm()
+    fileform = FileForm()
     room_id = room_id if room_id else (UP.groups.all()[0].code if UP.groups.all() else '')
     meet_ = Meet.objects.filter(code=room_id).first()
     if Meet.objects.filter(code=room_id).first():
         members = Meet.objects.filter(code=room_id).first().members.all()
+        invited = Meet.objects.filter(code=room_id).first().invited.all()
     else:
         members=[]
-
-    nonmembers = set(UserProfile.objects.all()) - set(members)
-    context = {'room_id':room_id,'admin':(True if meet_ and meet_.admin.all()[0].user.username == user.username else False), 'UP':UP ,'username':user.username, 'meets':meets,'form':form, 'nonmembers':nonmembers, 'members':members, 'msglist':load(room_id, user.username)}
+        invited=[]
+    
+    nonmembers = set(UserProfile.objects.all()) - set(members) - set(invited)
+    context = {'room_id':room_id,'admin':(True if meet_ and meet_.admin.all()[0].user.username == user.username else False), 'UP':UP ,'username':user.username, 'meets':meets,'form':form,'fileform':fileform, 'nonmembers':nonmembers, 'members':members, 'invited':invited, 'msglist':load(room_id, user.username)}
 
     return render(request, 'chat/chat.html', context)
 

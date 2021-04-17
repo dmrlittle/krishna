@@ -31,7 +31,7 @@ class ChatConsumer(WebsocketConsumer):
         username =  self.scope['user'].username
         dt = datetime.datetime.now()
         
-        save(self.room_name, username, message, dt)
+        save(self.room_name, username, message, dt, 'msg')
         # Send message to room group
         async_to_sync(self.channel_layer.group_send)(
             self.room_group_name,
@@ -39,6 +39,7 @@ class ChatConsumer(WebsocketConsumer):
                 'type': 'chat_message',
                 'message': message,
                 'username': username,
+                'datatype': 'msg',
                 'dt': f"{dt.strftime('%I')}:{dt.strftime('%M')} {dt.strftime('%p')}",
                 #'admin': '#ffff80' if self.scope['user'].groups.filter(name='miniadmin').exists() else ''
             }
@@ -49,14 +50,22 @@ class ChatConsumer(WebsocketConsumer):
         message = event['message']
         username = event['username']
         dt = event['dt']
+        datatype = event['datatype']
         #admin = event['admin']
-
+        print("""p
+              p
+              p
+              p
+              p
+              p
+              p""")
 
         # Send message to WebSocket
         self.send(text_data=json.dumps({
             'message': message,
             'username':username,
             'dt':dt,
+            'datatype':datatype,
             #'admin':admin
             'sender': ['justify-content-end','msg1'] if self.scope['user'].username == username else []
         }))
