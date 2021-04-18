@@ -28,21 +28,17 @@ def send(room_id, msg, usr):
                 }
             )
     save(room_id,usr,msg,dt,'file')
-    print("""l
-          l
-          l
-          l
-          l
-          l
-          l""")
+
     
-def load(code, username_):
+def load(code, username_, ts):
     meet = Meet.objects.filter(code=code).first()
     retlist = []
     if meet:
         if meet.messages:
             msgdict = json.loads(meet.messages)
             for key,val in msgdict.items():
+                if ts and float(str(key))<float(ts):
+                    continue
                 dt = datetime.datetime.fromtimestamp(float(str(key)))
                 username = val[0]
                 message = val[1]

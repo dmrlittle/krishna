@@ -52,13 +52,7 @@ class ChatConsumer(WebsocketConsumer):
         dt = event['dt']
         datatype = event['datatype']
         #admin = event['admin']
-        print("""p
-              p
-              p
-              p
-              p
-              p
-              p""")
+
 
         # Send message to WebSocket
         self.send(text_data=json.dumps({

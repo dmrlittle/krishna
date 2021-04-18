@@ -8,6 +8,7 @@ class Meet(models.Model):
     dt = models.DateTimeField(default=now)
     admin = models.ManyToManyField(UserProfile)
     invited = models.ManyToManyField(UserProfile, related_name="invited_groups")
+    membermeta = models.TextField(default='')
     members = models.ManyToManyField(UserProfile, related_name="groups")
     
     def __str__(self):
